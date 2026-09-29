@@ -1,0 +1,254 @@
+[
+  {
+    "id": "TC-CALL-001",
+    "title": "Iniciar llamada desde conversación existente",
+    "steps": "Abrir una conversación existente con un contacto y pulsar el botón de llamada de voz",
+    "expected": "La aplicación inicia correctamente el proceso de llamada",
+    "priority": "HIGH"
+  },
+  {
+    "id": "TC-CALL-002",
+    "title": "Iniciar llamada desde conversación - variante",
+    "steps": "Abrir una conversación existente con un contacto y pulsar el botón de llamada de voz",
+    "expected": "La aplicación inicia correctamente el proceso de llamada",
+    "priority": "MEDIUM"
+  },
+  {
+    "id": "TC-CALL-003",
+    "title": "Notificación de llamada entrante",
+    "steps": "Iniciar una llamada desde el usuario A hacia el usuario B",
+    "expected": "El usuario B recibe una notificación de llamada entrante",
+    "priority": "HIGH"
+  },
+  {
+    "id": "TC-CALL-004",
+    "title": "Aceptar llamada entrante",
+    "steps": "Recibir una llamada entrante y pulsar Aceptar",
+    "expected": "La llamada se establece correctamente entre ambos usuarios",
+    "priority": "HIGH"
+  },
+  {
+    "id": "TC-CALL-005",
+    "title": "Rechazar llamada entrante",
+    "steps": "Recibir una llamada entrante y pulsar Rechazar",
+    "expected": "La llamada finaliza sin establecer comunicación",
+    "priority": "HIGH"
+  },
+  {
+    "id": "TC-CALL-006",
+    "title": "Visualizar llamada rechazada",
+    "steps": "El usuario B rechaza una llamada iniciada por el usuario A",
+    "expected": "El usuario A visualiza el estado de llamada rechazada",
+    "priority": "HIGH"
+  },
+  {
+    "id": "TC-CALL-007",
+    "title": "Llamada sin respuesta",
+    "steps": "Iniciar una llamada y no responder desde el dispositivo destinatario",
+    "expected": "La llamada finaliza automáticamente después del tiempo configurado",
+    "priority": "HIGH"
+  },
+  {
+    "id": "TC-CALL-008",
+    "title": "Activar micrófono durante llamada",
+    "steps": "Establecer una llamada y activar el micrófono",
+    "expected": "El micrófono se activa correctamente",
+    "priority": "MEDIUM"
+  },
+  {
+    "id": "TC-CALL-009",
+    "title": "Desactivar micrófono durante llamada",
+    "steps": "Establecer una llamada y desactivar el micrófono",
+    "expected": "El micrófono se desactiva correctamente",
+    "priority": "MEDIUM"
+  },
+  {
+    "id": "TC-CALL-010",
+    "title": "Finalizar llamada desde iniciador",
+    "steps": "Establecer una llamada y pulsar Finalizar llamada",
+    "expected": "La llamada finaliza para ambos usuarios",
+    "priority": "HIGH"
+  },
+  {
+    "id": "TC-CALL-011",
+    "title": "Finalizar llamada desde destinatario",
+    "steps": "Establecer una llamada y finalizarla desde el dispositivo destinatario",
+    "expected": "La llamada finaliza para ambos usuarios",
+    "priority": "HIGH"
+  },
+  {
+    "id": "TC-CALL-012",
+    "title": "Mostrar estado conectando",
+    "steps": "Iniciar una llamada y observar la interfaz mientras se establece la conexión",
+    "expected": "La interfaz muestra el estado conectando",
+    "priority": "MEDIUM"
+  },
+  {
+    "id": "TC-CALL-013",
+    "title": "Mostrar estado activa",
+    "steps": "Aceptar una llamada y revisar el estado de la interfaz",
+    "expected": "La interfaz muestra la llamada como activa",
+    "priority": "MEDIUM"
+  },
+  {
+    "id": "TC-CALL-014",
+    "title": "Mostrar estado finalizada",
+    "steps": "Finalizar una llamada activa y revisar la interfaz",
+    "expected": "La interfaz muestra correctamente el estado finalizada",
+    "priority": "MEDIUM"
+  },
+  {
+    "id": "TC-CALL-015",
+    "title": "Recuperación ante conexión inestable",
+    "steps": "Establecer una llamada y provocar una conexión de red inestable",
+    "expected": "La aplicación intenta recuperar la conexión sin finalizar inmediatamente la llamada",
+    "priority": "HIGH"
+  },
+  {
+    "id": "TC-CALL-016",
+    "title": "Conexión inestable durante llamada",
+    "steps": "Durante una llamada activa reducir temporalmente la calidad de la conexión",
+    "expected": "La llamada permanece activa mientras se intenta recuperar la conexión",
+    "priority": "HIGH"
+  },
+  {
+    "id": "TC-CALL-017",
+    "title": "Pérdida completa de conexión",
+    "steps": "Establecer una llamada y desconectar completamente la conexión de uno de los usuarios",
+    "expected": "La aplicación informa claramente el estado de la llamada",
+    "priority": "HIGH"
+  },
+  {
+    "id": "TC-CALL-018",
+    "title": "Cambio de Wi-Fi a datos móviles",
+    "steps": "Establecer una llamada mediante Wi-Fi y cambiar a datos móviles",
+    "expected": "La llamada continúa funcionando correctamente",
+    "priority": "HIGH"
+  },
+  {
+    "id": "TC-CALL-019",
+    "title": "Cambio de datos móviles a Wi-Fi",
+    "steps": "Establecer una llamada mediante datos móviles y cambiar a Wi-Fi",
+    "expected": "La llamada continúa funcionando correctamente",
+    "priority": "HIGH"
+  },
+  {
+    "id": "TC-CALL-020",
+    "title": "Evitar llamadas simultáneas al mismo contacto",
+    "steps": "Iniciar una llamada y volver a pulsar rápidamente el botón de llamada",
+    "expected": "La aplicación evita crear una segunda llamada simultánea",
+    "priority": "HIGH"
+  },
+  {
+    "id": "TC-CALL-021",
+    "title": "Doble clic en botón de llamada",
+    "steps": "Realizar doble clic rápidamente sobre el botón de llamada",
+    "expected": "Solo se crea una sesión de llamada",
+    "priority": "HIGH"
+  },
+  {
+    "id": "TC-CALL-022",
+    "title": "Duración consistente de llamada",
+    "steps": "Establecer una llamada, mantenerla activa y finalizarla",
+    "expected": "Ambos usuarios visualizan la misma duración de llamada",
+    "priority": "MEDIUM"
+  },
+  {
+    "id": "TC-CALL-023",
+    "title": "Estado final consistente",
+    "steps": "Finalizar una llamada desde uno de los dispositivos y revisar ambos dispositivos",
+    "expected": "Ambos usuarios visualizan el mismo estado final",
+    "priority": "HIGH"
+  },
+  {
+    "id": "TC-CALL-024",
+    "title": "Llamada a usuario no disponible",
+    "steps": "Intentar iniciar una llamada con un usuario que no está disponible",
+    "expected": "La aplicación informa que el usuario no está disponible",
+    "priority": "MEDIUM"
+  },
+  {
+    "id": "TC-CALL-025",
+    "title": "Cancelar llamada durante conexión",
+    "steps": "Iniciar una llamada y finalizarla mientras permanece en estado conectando",
+    "expected": "La sesión se cancela correctamente sin dejar una llamada activa",
+    "priority": "MEDIUM"
+  },
+  {
+    "id": "TC-CALL-026",
+    "title": "Reintentar llamada después de un fallo",
+    "steps": "Intentar iniciar una llamada, provocar un fallo de conexión y volver a intentarlo",
+    "expected": "La aplicación permite iniciar una nueva llamada sin crear sesiones duplicadas",
+    "priority": "HIGH"
+  },
+  {
+    "id": "TC-CALL-027",
+    "title": "Iniciar llamada desde conversación existente",
+    "steps": "Abrir una conversación existente con un contacto y pulsar el botón de llamada de voz",
+    "expected": "La aplicación inicia correctamente el proceso de llamada",
+    "priority": "HIGH"
+  },
+  {
+    "id": "TC-CALL-028",
+    "title": "Iniciar llamada desde conversación existente",
+    "steps": "Abrir una conversación existente con un contacto y pulsar el botón de llamada de voz",
+    "expected": "La aplicación inicia correctamente el proceso de llamada",
+    "priority": "MEDIUM"
+  },
+  {
+    "id": "TC-CALL-029",
+    "title": "Aceptar llamada entrante",
+    "steps": "Recibir una llamada entrante y pulsar Aceptar",
+    "expected": "La llamada se establece correctamente entre ambos usuarios",
+    "priority": "HIGH"
+  },
+  {
+    "id": "TC-CALL-030",
+    "title": "Aceptar llamada entrante - segunda prueba",
+    "steps": "Recibir una llamada entrante y pulsar Aceptar",
+    "expected": "La llamada se establece correctamente entre ambos usuarios",
+    "priority": "HIGH"
+  },
+  {
+    "id": "TC-CALL-031",
+    "title": "Finalizar llamada desde iniciador",
+    "steps": "Establecer una llamada y pulsar Finalizar llamada",
+    "expected": "La llamada finaliza para ambos usuarios",
+    "priority": "HIGH"
+  },
+  {
+    "id": "TC-CALL-032",
+    "title": "Finalizar llamada desde iniciador - duplicado",
+    "steps": "Establecer una llamada y pulsar Finalizar llamada",
+    "expected": "La llamada finaliza para ambos usuarios",
+    "priority": "MEDIUM"
+  },
+  {
+    "id": "TC-CALL-033",
+    "title": "Recuperación ante conexión inestable",
+    "steps": "Establecer una llamada y provocar una conexión de red inestable",
+    "expected": "La aplicación intenta recuperar la conexión sin finalizar inmediatamente la llamada",
+    "priority": "HIGH"
+  },
+  {
+    "id": "TC-CALL-034",
+    "title": "Recuperar llamada después de conexión inestable",
+    "steps": "Establecer una llamada y provocar una conexión de red inestable",
+    "expected": "La aplicación intenta recuperar la conexión sin finalizar inmediatamente la llamada",
+    "priority": "HIGH"
+  },
+  {
+    "id": "TC-CALL-035",
+    "title": "Cambio de Wi-Fi a datos móviles",
+    "steps": "Establecer una llamada mediante Wi-Fi y cambiar a datos móviles",
+    "expected": "La llamada continúa funcionando correctamente",
+    "priority": "HIGH"
+  },
+  {
+    "id": "TC-CALL-036",
+    "title": "Cambio de Wi-Fi a datos móviles - variante",
+    "steps": "Establecer una llamada mediante Wi-Fi y cambiar a datos móviles",
+    "expected": "La llamada continúa funcionando correctamente",
+    "priority": "MEDIUM"
+  }
+]
