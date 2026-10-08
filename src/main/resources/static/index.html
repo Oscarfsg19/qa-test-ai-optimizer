@@ -763,122 +763,363 @@
 
   function render(d){
 
-    let modeElement =
-            document.getElementById('mode');
-
-
-    if(modeElement){
-
-      modeElement.textContent =
-              d.mode;
-
-    }
-
-
     let html = `
 
-      <div class="metrics">
+    <div class="metrics">
 
-        <div class="metric">
-
-          <b>${d.totalCases}</b>
-
-          Casos
-
-        </div>
-
-
-        <div class="metric">
-
-          <b>${d.duplicateGroups}</b>
-
-          Duplicados
-
-        </div>
-
-
-        <div class="metric">
-
-          <b>${d.traceableCases}</b>
-
-          Con trazabilidad
-
-        </div>
-
-
-        <div class="metric">
-
-          <b>${d.highRiskCases}</b>
-
-          Alto riesgo
-
-        </div>
-
+      <div class="metric">
+        <b>${d.totalCases ?? 0}</b>
+        Casos
       </div>
 
+      <div class="metric">
+        <b>${d.duplicateGroups ?? 0}</b>
+        Duplicados
+      </div>
 
-      <h3>
-        Resumen ejecutivo
-      </h3>
+      <div class="metric">
+        <b>${d.coveragePercentage ?? 0}%</b>
+        Cobertura
+      </div>
+
+      <div class="metric">
+        <b>${d.highRiskCases ?? 0}</b>
+        Alto riesgo
+      </div>
+
+    </div>
+
+    <h3>
+      Resumen ejecutivo
+    </h3>
+
+    <p>
+      ${d.executiveSummary ?? 'Sin resumen disponible.'}
+    </p>
 
 
-      <p>
-        ${d.executiveSummary}
-      </p>
+    <h3>
+      Relevancia de la suite
+    </h3>
+
+    <div class="metrics">
+
+      <div class="metric">
+        <b>${d.relevantCases ?? 0}</b>
+        Relevantes
+      </div>
+
+      <div class="metric">
+        <b>${d.partiallyRelevantCases ?? 0}</b>
+        Parcialmente relevantes
+      </div>
+
+      <div class="metric">
+        <b>${d.irrelevantCases ?? 0}</b>
+        Irrelevantes
+      </div>
+
+      <div class="metric">
+        <b>${d.traceableCases ?? 0}</b>
+        Trazables
+      </div>
+
+    </div>
 
 
-      <h3>
-        Hallazgos
-      </h3>
+    <h3>
+      Cobertura por criterio
+    </h3>
 
-    `;
+  `;
 
 
     /*
-     * Hallazgos
+     * COBERTURA POR CRITERIO
      */
 
-    if(!d.findings || !d.findings.length){
+    if(
+            d.criteriaCoverage &&
+            d.criteriaCoverage.length
+    ){
 
-      html +=
-              '<p>No se detectaron hallazgos.</p>';
+      html += `
+
+      <table>
+
+        <thead>
+
+          <tr>
+            <th>Criterio</th>
+            <th>Estado</th>
+            <th>Casos relacionados</th>
+            <th>Gap</th>
+          </tr>
+
+        </thead>
+
+        <tbody>
+
+    `;
+
+      d.criteriaCoverage.forEach(c => {
+
+        let statusClass = '';
+
+        if(c.status === 'COVERED'){
+          statusClass = 'ok';
+        }
+
+        if(c.status === 'NOT_COVERED'){
+          statusClass = 'danger';
+        }
+
+        const relatedCases =
+                c.relatedCases &&
+                c.relatedCases.length
+                        ? c.relatedCases.join(', ')
+                        : 'Ninguno';
+
+        html += `
+
+        <tr>
+
+          <td>
+            <b>${c.criterionId}</b><br>
+            ${c.criterion}
+          </td>
+
+          <td>
+            <span class="pill ${statusClass}">
+              ${c.status}
+            </span>
+          </td>
+
+          <td>
+            ${relatedCases}
+          </td>
+
+          <td>
+            ${c.gap || 'Sin gap identificado.'}
+          </td>
+
+        </tr>
+
+      `;
+
+      });
+
+      html += `
+
+        </tbody>
+
+      </table>
+
+    `;
+
+    }else{
+
+      html += `
+      <p>
+        No se recibió información de cobertura por criterio.
+      </p>
+    `;
 
     }
 
 
-    if(d.findings){
+    /*
+     * RESUMEN DE COBERTURA
+     */
+
+    html += `
+
+    <h3>
+      Resumen de cobertura
+    </h3>
+
+    <ul>
+
+      <li>
+        <b>Criterios totales:</b>
+        ${d.criteriaTotal ?? 0}
+      </li>
+
+      <li>
+        <b>Cubiertos:</b>
+        ${d.criteriaCovered ?? 0}
+      </li>
+
+      <li>
+        <b>Parcialmente cubiertos:</b>
+        ${d.criteriaPartiallyCovered ?? 0}
+      </li>
+
+      <li>
+        <b>No cubiertos:</b>
+        ${d.criteriaNotCovered ?? 0}
+      </li>
+
+      <li>
+        <b>Cobertura:</b>
+        ${d.coveragePercentage ?? 0}%
+      </li>
+
+    </ul>
+
+
+    <h3>
+      Evaluación de casos
+    </h3>
+
+  `;
+
+
+    /*
+     * EVALUACIÓN DE CASOS
+     */
+
+    if(
+            d.caseAssessments &&
+            d.caseAssessments.length
+    ){
+
+      html += `
+
+      <table>
+
+        <thead>
+
+          <tr>
+            <th>Caso</th>
+            <th>Relevancia</th>
+            <th>Riesgo</th>
+            <th>Criterios</th>
+            <th>Explicación</th>
+          </tr>
+
+        </thead>
+
+        <tbody>
+
+    `;
+
+      d.caseAssessments.forEach(c => {
+
+        html += `
+
+        <tr>
+
+          <td>
+            <b>${c.caseId}</b>
+          </td>
+
+          <td>
+            <span class="pill">
+              ${c.relevance}
+            </span>
+          </td>
+
+          <td>
+            <span class="pill">
+              ${c.risk}
+            </span>
+          </td>
+
+          <td>
+            ${
+                c.coveredCriteria &&
+                c.coveredCriteria.length
+                        ? c.coveredCriteria.join(', ')
+                        : 'Ninguno'
+        }
+          </td>
+
+          <td>
+            ${c.explanation || ''}
+          </td>
+
+        </tr>
+
+      `;
+
+      });
+
+      html += `
+
+        </tbody>
+
+      </table>
+
+    `;
+
+    }else{
+
+      html += `
+      <p>
+        No se recibió evaluación individual de los casos.
+      </p>
+    `;
+
+    }
+
+
+    /*
+     * HALLAZGOS
+     */
+
+    html += `
+
+    <h3>
+      Hallazgos
+    </h3>
+
+  `;
+
+    if(
+            !d.findings ||
+            !d.findings.length
+    ){
+
+      html += `
+      <p>
+        No se detectaron hallazgos.
+      </p>
+    `;
+
+    }else{
 
       d.findings.forEach(f => {
 
         html += `
 
-          <div class="finding ${
+        <div class="finding ${
                 f.severity === 'HIGH'
                         ? 'danger'
                         : ''
         }">
 
-            <b>${f.type}</b>
-            ·
-            ${f.severity}
+          <b>${f.type}</b>
+          ·
+          ${f.severity}
 
-            <br>
+          <br>
 
-            <b>Casos:</b>
-            ${f.cases}
+          <b>Casos:</b>
+          ${f.cases}
 
-            <br>
+          <br>
 
-            ${f.explanation}
+          ${f.explanation}
 
-            <br>
+          <br>
 
-            <b>Acción:</b>
-            ${f.action}
+          <b>Acción:</b>
+          ${f.action}
 
-          </div>
+        </div>
 
-        `;
+      `;
 
       });
 
@@ -886,56 +1127,118 @@
 
 
     /*
-     * Escenarios faltantes
+     * ESCENARIOS FALTANTES
      */
 
     html += `
 
-      <h3>
-        Escenarios faltantes
-      </h3>
+    <h3>
+      Escenarios faltantes
+    </h3>
 
-      <ul>
-
-    `;
-
+  `;
 
     if(
-            d.missingScenarios &&
-            d.missingScenarios.length
+            d.detailedMissingScenarios &&
+            d.detailedMissingScenarios.length
     ){
 
-      d.missingScenarios.forEach(x => {
+      d.detailedMissingScenarios.forEach(s => {
 
-        html +=
-                `<li>${x}</li>`;
+        html += `
+
+        <div class="finding danger">
+
+          <b>${s.title}</b>
+
+          <br><br>
+
+          <b>Criterios:</b>
+          ${
+                s.criteria &&
+                s.criteria.length
+                        ? s.criteria.join(', ')
+                        : 'No especificados'
+        }
+
+          <br>
+
+          <b>Objetivo:</b>
+          ${s.objective || ''}
+
+          <br>
+
+          <b>Pasos:</b>
+          ${s.steps || ''}
+
+          <br>
+
+          <b>Resultado esperado:</b>
+          ${s.expected || ''}
+
+          <br>
+
+          <b>Prioridad:</b>
+          ${s.priority || ''}
+
+          <br>
+
+          <b>Tipo:</b>
+          ${s.type || ''}
+
+        </div>
+
+      `;
 
       });
 
     }else{
 
-      html +=
-              '<li>No se detectaron escenarios adicionales con las reglas actuales.</li>';
+      /*
+       * Compatibilidad con el campo antiguo
+       */
+
+      if(
+              d.missingScenarios &&
+              d.missingScenarios.length
+      ){
+
+        d.missingScenarios.forEach(x => {
+
+          html += `
+          <div class="finding danger">
+            <b>${x}</b>
+          </div>
+        `;
+
+        });
+
+      }else{
+
+        html += `
+        <p>
+          No se detectaron escenarios faltantes.
+        </p>
+      `;
+
+      }
 
     }
 
 
     /*
-     * Recomendaciones
+     * RECOMENDACIONES
      */
 
     html += `
 
-      </ul>
+    <h3>
+      Recomendaciones
+    </h3>
 
-      <h3>
-        Recomendaciones
-      </h3>
+    <ul>
 
-      <ul>
-
-    `;
-
+  `;
 
     if(
             d.recommendations &&
@@ -944,20 +1247,31 @@
 
       d.recommendations.forEach(x => {
 
-        html +=
-                `<li>${x}</li>`;
+        html += `
+        <li>${x}</li>
+      `;
 
       });
 
+    }else{
+
+      html += `
+      <li>
+        No se generaron recomendaciones.
+      </li>
+    `;
+
     }
 
+    html += `
 
-    html +=
-            '</ul>';
+    </ul>
+
+  `;
 
 
     /*
-     * Mostrar resultado
+     * MOSTRAR RESULTADO
      */
 
     document.getElementById('result').innerHTML =
