@@ -8,7 +8,7 @@
 
 **AI QA Test Optimizer** es una prueba de concepto orientada a mejorar el proceso de análisis y mantenimiento de pruebas dentro de un entorno de desarrollo ágil.
 
-La solución busca utilizar capacidades de análisis automatizado y posteriormente inteligencia artificial para ayudar al equipo de QA a identificar:
+La solución busca utilizar capacidades de análisis automatizado e inteligencia artificial para ayudar al equipo de QA a identificar:
 
 * 🔎 Casos de prueba duplicados.
 * ⚠️ Riesgos potenciales.
@@ -16,6 +16,8 @@ La solución busca utilizar capacidades de análisis automatizado y posteriormen
 * 🧪 Escenarios de prueba faltantes.
 * ♻️ Oportunidades de optimización de la suite.
 * 🤖 Oportunidades de automatización.
+* 📊 Cobertura de criterios de aceptación.
+* 🎯 Casos relevantes, parcialmente relevantes e irrelevantes.
 
 La herramienta está planteada como un **asistente para QA**, donde la tecnología ayuda a acelerar el análisis inicial, mientras que la decisión final y validación de la cobertura permanecen bajo responsabilidad del equipo de calidad.
 
@@ -47,6 +49,8 @@ Suite actual de pruebas
         │
         ├──► Trazabilidad
         │
+        ├──► Cobertura
+        │
         ├──► Escenarios faltantes
         │
         └──► Recomendaciones
@@ -69,7 +73,7 @@ La solución busca que QA pueda pasar de un proceso principalmente reactivo a un
 * Identificar riesgos relacionados con una funcionalidad.
 * Facilitar la priorización de pruebas.
 * Generar recomendaciones para la evolución de la suite.
-* Servir como base para incorporar modelos de IA generativa.
+* Incorporar análisis semántico mediante inteligencia artificial.
 
 ---
 
@@ -104,6 +108,8 @@ El flujo propuesto es:
 
 La responsabilidad del equipo de QA permanece en la validación de los resultados, priorización y decisión final sobre qué pruebas deben formar parte de la estrategia de calidad.
 
+Actualmente el proyecto cuenta con una integración con OpenAI para realizar un análisis semántico de la historia de usuario, criterios de aceptación y casos de prueba.
+
 ---
 
 # 🛠️ Tecnologías utilizadas
@@ -114,6 +120,8 @@ El proyecto utiliza las siguientes tecnologías:
 * **Spring Boot 3.4.5** como framework para la aplicación web.
 * **Maven** como herramienta de construcción y gestión de dependencias.
 * **JUnit 5** para pruebas automatizadas.
+* **OpenAI Java SDK 4.70.0** para la integración con OpenAI.
+* **OpenAI Responses API** para el análisis semántico.
 * **HTML5** para la interfaz de usuario.
 * **CSS3** para estilos y diseño visual.
 * **JavaScript** para la interacción con el backend.
@@ -175,7 +183,7 @@ Se recomienda utilizar:
 # 📁 Estructura del Proyecto
 
 ```text
-qa-test-ai-challenger/
+qa-test-ai-optimizer/
 │
 ├── src/
 │   │
@@ -188,16 +196,27 @@ qa-test-ai-challenger/
 │   │   │               │
 │   │   │               ├── AiQaApplication.java
 │   │   │               │
+│   │   │               ├── config/
+│   │   │               │   └── OpenAiConfig.java
+│   │   │               │
+│   │   │               ├── controller/
+│   │   │               │   └── QaController.java
+│   │   │               │
 │   │   │               ├── model/
+│   │   │               │   ├── AnalysisRequest.java
+│   │   │               │   ├── AnalysisResponse.java
 │   │   │               │   └── TestCase.java
 │   │   │               │
 │   │   │               └── service/
-│   │   │                   └── LocalQaAnalyzer.java
+│   │   │                   ├── AiQaService.java
+│   │   │                   ├── LocalQaAnalyzer.java
+│   │   │                   └── OpenAiQaAnalyzer.java
 │   │   │
 │   │   └── resources/
+│   │       ├── application.properties
 │   │       └── static/
 │   │           ├── index.html
-│   │           └── alegra.png
+│   │           └── test-cases.json
 │   │
 │   └── test/
 │       └── java/
@@ -247,13 +266,95 @@ Esto permite trabajar con una representación estructurada de la suite de prueba
 
 ---
 
+### `model/AnalysisRequest.java`
+
+Representa la información enviada al backend para realizar el análisis.
+
+Incluye:
+
+```text
+Historia de usuario
+Criterios de aceptación
+Casos de prueba
+```
+
+---
+
+### `model/AnalysisResponse.java`
+
+Representa la respuesta estructurada generada por el análisis.
+
+Además de las métricas originales, actualmente contempla información relacionada con:
+
+* Casos relevantes.
+* Casos parcialmente relevantes.
+* Casos irrelevantes.
+* Cobertura de criterios.
+* Criterios cubiertos.
+* Criterios parcialmente cubiertos.
+* Criterios no cubiertos.
+* Evaluación individual de casos.
+* Escenarios faltantes detallados.
+* Resumen ejecutivo.
+* Recomendaciones.
+
+---
+
 ### `service/LocalQaAnalyzer.java`
 
 Contiene la lógica principal del análisis de QA.
 
 Actualmente permite realizar análisis sobre la suite existente, incluyendo la identificación de posibles casos duplicados y otros indicadores utilizados por la aplicación.
 
-Esta capa está pensada como punto de extensión para incorporar posteriormente análisis basado en modelos de inteligencia artificial.
+Esta capa también funciona como mecanismo de respaldo cuando el análisis mediante IA no está disponible.
+
+---
+
+### `service/AiQaService.java`
+
+Es el servicio encargado de seleccionar el tipo de análisis que se ejecutará.
+
+Dependiendo de la configuración puede utilizar:
+
+* `LocalQaAnalyzer`.
+* Mock AI.
+* `OpenAiQaAnalyzer`.
+
+Si el análisis mediante OpenAI genera un error, el servicio utiliza automáticamente `LocalQaAnalyzer` como fallback.
+
+---
+
+### `service/OpenAiQaAnalyzer.java`
+
+Contiene la integración con OpenAI para realizar un análisis semántico de la historia de usuario, criterios de aceptación y casos de prueba.
+
+El análisis permite obtener información adicional como:
+
+* Cobertura de criterios de aceptación.
+* Casos relevantes.
+* Casos parcialmente relevantes.
+* Casos irrelevantes.
+* Nivel de riesgo.
+* Duplicidades semánticas.
+* Escenarios faltantes.
+* Recomendaciones.
+* Resumen ejecutivo.
+
+---
+
+### `config/OpenAiConfig.java`
+
+Contiene la configuración del cliente de OpenAI.
+
+El cliente utiliza la variable de entorno:
+
+```text
+OPENAI_API_KEY
+```
+
+para autenticarse con OpenAI.
+
+La API key no debe almacenarse directamente en el código fuente ni subirse al repositorio.
 
 ---
 
@@ -279,9 +380,9 @@ Desde esta pantalla el usuario puede:
 
 ---
 
-### `static/alegra.png`
+### `static/test-cases.json`
 
-Logotipo utilizado en la interfaz visual de la aplicación.
+Contiene una suite de casos de prueba de ejemplo utilizada para realizar demostraciones y validar el funcionamiento del analizador.
 
 ---
 
@@ -327,12 +428,87 @@ Después de ejecutar el análisis, la aplicación presenta información como:
 * Grupos de duplicados.
 * Casos con trazabilidad.
 * Casos de alto riesgo.
+* Casos relevantes.
+* Casos parcialmente relevantes.
+* Casos irrelevantes.
+* Cobertura de criterios de aceptación.
+* Criterios cubiertos.
+* Criterios parcialmente cubiertos.
+* Criterios no cubiertos.
 * Resumen ejecutivo.
 * Hallazgos.
 * Escenarios faltantes.
 * Recomendaciones.
 
 ---
+
+# 🤖 Configuración de IA
+
+La aplicación permite trabajar en tres modos diferentes.
+
+## Modo local
+
+```properties
+ai.enabled=false
+ai.mock=false
+```
+
+Utiliza `LocalQaAnalyzer` y no realiza llamadas a OpenAI.
+
+---
+
+## Modo Mock
+
+```properties
+ai.enabled=true
+ai.mock=true
+```
+
+Permite probar el flujo de análisis mediante IA sin realizar llamadas reales a OpenAI.
+
+Este modo es útil para:
+
+* Desarrollo.
+* Pruebas.
+* Demostraciones.
+* Validación de la interfaz.
+* Pruebas sin consumir créditos de API.
+
+---
+
+## Modo OpenAI
+
+```properties
+ai.enabled=true
+ai.mock=false
+```
+
+Utiliza `OpenAiQaAnalyzer` y realiza el análisis mediante OpenAI.
+
+La API key debe estar configurada mediante la variable de entorno:
+
+```text
+OPENAI_API_KEY
+```
+
+Ejemplo de configuración:
+
+```properties
+spring.application.name=ai-qa-test-optimizer
+server.port=8080
+
+ai.enabled=true
+ai.mock=false
+ai.model=gpt-5.6-luna
+```
+
+Para realizar pruebas sin consumir API:
+
+```properties
+ai.enabled=true
+ai.mock=true
+ai.model=gpt-5.6-luna
+```
 
 ---
 
@@ -341,7 +517,7 @@ Después de ejecutar el análisis, la aplicación presenta información como:
 ## 1. Clonar el proyecto
 
 ```sh
-git clone <https://github.com/Oscarfsg19/qa-test-ai-optimizer.git>
+git clone https://github.com/Oscarfsg19/qa-test-ai-optimizer.git
 ```
 
 Ingresar al proyecto:
@@ -456,7 +632,6 @@ Después:
 
 ---
 
-
 # 🔌 API
 
 La interfaz utiliza un endpoint para ejecutar el análisis:
@@ -477,6 +652,25 @@ El frontend envía información estructurada mediante JSON:
 
 El backend procesa la información y devuelve los resultados utilizados por la interfaz.
 
+La respuesta puede incluir información adicional generada por el análisis semántico:
+
+```text
+Casos relevantes
+Casos parcialmente relevantes
+Casos irrelevantes
+
+Criterios cubiertos
+Criterios parcialmente cubiertos
+Criterios no cubiertos
+Porcentaje de cobertura
+
+Cobertura por criterio
+Evaluación por caso
+Escenarios faltantes
+Recomendaciones
+Resumen ejecutivo
+```
+
 ---
 
 # 📊 Valor para el proceso de QA
@@ -491,6 +685,7 @@ La solución está orientada a atacar algunos de los problemas habituales en equ
 | Cobertura incompleta         | Identificación de escenarios faltantes   |
 | Regresiones                  | Identificación de áreas de riesgo        |
 | Mucho trabajo manual         | Asistencia automatizada para el análisis |
+| Casos irrelevantes           | Evaluación semántica mediante IA         |
 
 ---
 
@@ -500,15 +695,24 @@ El prototipo puede evolucionar hacia una solución más completa incorporando:
 
 ### IA generativa
 
-Integrar un modelo de lenguaje para:
+La primera integración con IA ya fue implementada mediante OpenAI.
+
+Actualmente permite:
 
 * Analizar historias de usuario.
-* Identificar riesgos funcionales.
-* Generar escenarios de prueba.
-* Proponer casos positivos y negativos.
-* Identificar casos límite.
-* Recomendar candidatos para automatización.
-* Resumir resultados para stakeholders.
+* Analizar criterios de aceptación.
+* Evaluar la cobertura de los criterios.
+* Identificar casos relevantes e irrelevantes.
+* Identificar riesgos.
+* Detectar escenarios faltantes.
+* Generar recomendaciones.
+* Generar un resumen ejecutivo.
+
+Como siguiente evolución se pueden incorporar:
+
+* Generación automática de nuevos casos de prueba.
+* Identificación de candidatos para automatización.
+* Integración con herramientas de gestión de pruebas.
 
 ### Integración CI/CD
 
@@ -591,6 +795,7 @@ Utilizar métricas históricas para identificar:
 
 ---
 
+---
 
 # 👨‍💻 Autor
 
@@ -599,4 +804,4 @@ Utilizar métricas históricas para identificar:
 **Proyecto:** AI QA Test Optimizer
 **Desafío:** ACME Corp — QA Challenge
 **Versión:** 1.0
-**Fecha:** 28/09/2026
+**Fecha:** OCtubre 2026

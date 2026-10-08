@@ -1,3 +1,4 @@
+//Oscar Fernando Sánchez Gámez - QA Automated - Versión 1
 package com.acme.qa;
 
 import org.springframework.boot.SpringApplication;
