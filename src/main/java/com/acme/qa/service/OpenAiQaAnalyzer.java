@@ -8,17 +8,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.openai.client.OpenAIClient;
 import com.openai.models.responses.Response;
 import com.openai.models.responses.ResponseCreateParams;
+import org.springframework.boot.autoconfigure.condition.AllNestedConditions;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
-@ConditionalOnProperty(
-        name = "ai.enabled",
-        havingValue = "true"
-)
+@Conditional(OpenAiQaAnalyzer.OpenAiEnabledCondition.class)
 public class OpenAiQaAnalyzer {
 
     private final OpenAIClient client;
@@ -36,21 +35,18 @@ public class OpenAiQaAnalyzer {
 
         String prompt = buildPrompt(request);
 
-        ResponseCreateParams params = ResponseCreateParams.builder()
-                .model("gpt-5.6-luna")
-                .input(prompt)
-                .build();
+        ResponseCreateParams params =
+                ResponseCreateParams.builder()
+                        .model("gpt-5.6-luna")
+                        .input(prompt)
+                        .build();
 
-        Response response = client.responses().create(params);
+        Response response =
+                client.responses().create(params);
 
-        String output = extractOutputText(response);
+        String output =
+                extractOutputText(response);
 
-        /*
-         * DEBUG:
-         * Mostramos exactamente lo que devuelve OpenAI.
-         * Esto nos permitirá comprobar si la IA está devolviendo
-         * criteriaCoverage, caseAssessments y missingScenarios.
-         */
         System.out.println();
         System.out.println("=================================================");
         System.out.println("========== RESPUESTA CRUDA DE OPENAI ===========");
@@ -76,9 +72,10 @@ public class OpenAiQaAnalyzer {
 
         try {
 
-            casesJson = mapper
-                    .writerWithDefaultPrettyPrinter()
-                    .writeValueAsString(testCases);
+            casesJson =
+                    mapper
+                            .writerWithDefaultPrettyPrinter()
+                            .writeValueAsString(testCases);
 
         } catch (Exception e) {
 
@@ -140,9 +137,6 @@ public class OpenAiQaAnalyzer {
                 CA-03
                 ...
 
-                El número debe corresponder al número del criterio
-                proporcionado por el usuario.
-
                 Si ningún caso prueba un criterio:
 
                 status = NOT_COVERED
@@ -198,10 +192,6 @@ public class OpenAiQaAnalyzer {
 
                 Un caso IRRELEVANT DEBE tener riesgo NONE
                 respecto a esta historia.
-
-                Si un caso es PARTIALLY_RELEVANT, su riesgo debe
-                reflejar únicamente el comportamiento relacionado
-                con la historia.
 
                 ==================================================
                 4. DUPLICADOS
@@ -266,9 +256,6 @@ public class OpenAiQaAnalyzer {
                 Si la suite actual no cubre la historia,
                 DEBES generar escenarios faltantes.
 
-                No devuelvas una lista vacía simplemente porque
-                existen muchos casos de prueba.
-
                 Si TODOS los casos pertenecen a otra funcionalidad,
                 debes indicarlo claramente y generar los escenarios
                 necesarios para cubrir la historia actual.
@@ -279,14 +266,7 @@ public class OpenAiQaAnalyzer {
 
                 Genera recomendaciones concretas para mejorar la suite.
 
-                Evita recomendaciones genéricas como:
-
-                "mejorar las pruebas"
-
-                Prefiere recomendaciones específicas como:
-
-                "Agregar una prueba que intente editar un mensaje
-                perteneciente a otro usuario."
+                Evita recomendaciones genéricas.
 
                 ==================================================
                 REGLAS IMPORTANTES
@@ -302,7 +282,7 @@ public class OpenAiQaAnalyzer {
                 - Debes analizar TODOS los casos.
                 - Si la suite pertenece a otra funcionalidad,
                   indícalo explícitamente.
-                - Si la cobertura es 0%%, los escenarios faltantes
+                - Si la cobertura es 0%, los escenarios faltantes
                   NO deben ser una lista vacía.
                 - No generes casos duplicados entre los escenarios faltantes.
                 - Un caso que prueba llamadas de voz NO debe considerarse
@@ -397,39 +377,42 @@ public class OpenAiQaAnalyzer {
 
         try {
 
-            JsonNode root = mapper.readTree(
-                    mapper.writeValueAsString(response)
-            );
+            JsonNode root =
+                    mapper.readTree(
+                            mapper.writeValueAsString(response)
+                    );
 
-            JsonNode output = root.path("output");
+            JsonNode output =
+                    root.path("output");
 
             if (output.isArray()) {
 
-                StringBuilder result = new StringBuilder();
+                StringBuilder result =
+                        new StringBuilder();
 
                 for (JsonNode item : output) {
 
-                    JsonNode content = item.path("content");
+                    JsonNode content =
+                            item.path("content");
 
                     if (content.isArray()) {
 
                         for (JsonNode element : content) {
 
-                            JsonNode text = element.path("text");
+                            JsonNode text =
+                                    element.path("text");
 
                             if (!text.isMissingNode()
                                     && !text.isNull()) {
 
-                                result.append(text.asText());
+                                result.append(
+                                        text.asText()
+                                );
                             }
                         }
                     }
                 }
 
-                /*
-                 * StringBuilder no necesita isEmpty().
-                 * Usamos length() para comprobar si contiene texto.
-                 */
                 if (result.length() > 0) {
 
                     return cleanJson(
@@ -451,13 +434,10 @@ public class OpenAiQaAnalyzer {
         );
     }
 
-    /**
-     * Elimina posibles fences Markdown en caso de que el modelo
-     * los agregue a pesar de haber solicitado JSON puro.
-     */
     private String cleanJson(String output) {
 
-        String cleaned = output.trim();
+        String cleaned =
+                output.trim();
 
         if (cleaned.startsWith("```json")) {
 
@@ -545,12 +525,6 @@ public class OpenAiQaAnalyzer {
                                     "Análisis generado por OpenAI."
                             );
 
-            /*
-             * =====================================================
-             * MÉTRICAS DE CASOS
-             * =====================================================
-             */
-
             int relevantCases = 0;
             int partiallyRelevantCases = 0;
             int irrelevantCases = 0;
@@ -582,12 +556,6 @@ public class OpenAiQaAnalyzer {
                 }
             }
 
-            /*
-             * =====================================================
-             * MÉTRICAS DE CRITERIOS
-             * =====================================================
-             */
-
             int criteriaTotal =
                     criteriaCoverage.size();
 
@@ -615,12 +583,6 @@ public class OpenAiQaAnalyzer {
                 }
             }
 
-            /*
-             * =====================================================
-             * PORCENTAJE DE COBERTURA
-             * =====================================================
-             */
-
             int coveragePercentage =
                     calculateCoveragePercentage(
                             criteriaTotal,
@@ -628,17 +590,9 @@ public class OpenAiQaAnalyzer {
                             criteriaPartiallyCovered
                     );
 
-            /*
-             * Compatibilidad con el concepto anterior de trazabilidad:
-             * consideramos trazables los casos relevantes.
-             */
             int traceableCases =
                     relevantCases;
 
-            /*
-             * Lista simple de escenarios para mantener compatible
-             * la interfaz anterior.
-             */
             List<String> missingScenarioTitles =
                     detailedMissingScenarios
                             .stream()
@@ -647,127 +601,76 @@ public class OpenAiQaAnalyzer {
                             )
                             .toList();
 
-            /*
-             * =====================================================
-             * DEBUG
-             * =====================================================
-             */
-
             System.out.println();
             System.out.println(
                     "========== MÉTRICAS CALCULADAS =========="
             );
-
             System.out.println(
-                    "Total casos: "
-                            + totalCases
+                    "Total casos: " + totalCases
             );
-
             System.out.println(
-                    "Duplicados: "
-                            + duplicateGroups
+                    "Duplicados: " + duplicateGroups
             );
-
             System.out.println(
-                    "Relevantes: "
-                            + relevantCases
+                    "Relevantes: " + relevantCases
             );
-
             System.out.println(
                     "Parcialmente relevantes: "
                             + partiallyRelevantCases
             );
-
             System.out.println(
-                    "Irrelevantes: "
-                            + irrelevantCases
+                    "Irrelevantes: " + irrelevantCases
             );
-
             System.out.println(
-                    "Alto riesgo: "
-                            + highRiskCases
+                    "Alto riesgo: " + highRiskCases
             );
-
             System.out.println(
-                    "Criterios totales: "
-                            + criteriaTotal
+                    "Criterios totales: " + criteriaTotal
             );
-
             System.out.println(
-                    "Criterios cubiertos: "
-                            + criteriaCovered
+                    "Criterios cubiertos: " + criteriaCovered
             );
-
             System.out.println(
                     "Criterios parcialmente cubiertos: "
                             + criteriaPartiallyCovered
             );
-
             System.out.println(
                     "Criterios no cubiertos: "
                             + criteriaNotCovered
             );
-
             System.out.println(
                     "Cobertura: "
                             + coveragePercentage
                             + "%"
             );
-
             System.out.println(
                     "Escenarios faltantes: "
                             + detailedMissingScenarios.size()
             );
-
             System.out.println(
                     "========================================="
             );
 
-            /*
-             * =====================================================
-             * RESPONSE FINAL
-             * =====================================================
-             */
-
             return new AnalysisResponse(
                     "OPENAI",
-
                     totalCases,
-
                     duplicateGroups,
-
                     traceableCases,
-
                     highRiskCases,
-
                     findings,
-
                     missingScenarioTitles,
-
                     recommendations,
-
                     executiveSummary,
-
                     relevantCases,
-
                     partiallyRelevantCases,
-
                     irrelevantCases,
-
                     criteriaTotal,
-
                     criteriaCovered,
-
                     criteriaPartiallyCovered,
-
                     criteriaNotCovered,
-
                     coveragePercentage,
-
                     criteriaCoverage,
-
                     caseAssessments,
-
                     detailedMissingScenarios
             );
 
@@ -791,14 +694,9 @@ public class OpenAiQaAnalyzer {
             return 0;
         }
 
-        /*
-         * Cobertura completa = 100%
-         * Cobertura parcial = 50%
-         */
-
         double score =
                 (
-                        (covered * 1.0)
+                        covered
                                 + (partiallyCovered * 0.5)
                 )
                         / total;
@@ -834,6 +732,34 @@ public class OpenAiQaAnalyzer {
         } catch (Exception e) {
 
             return new ArrayList<>();
+        }
+    }
+
+    /**
+     * Condición para activar OpenAI únicamente cuando:
+     *
+     * ai.enabled=true
+     * ai.mock=false
+     */
+    static class OpenAiEnabledCondition
+            extends AllNestedConditions {
+
+        OpenAiEnabledCondition() {
+            super(ConfigurationPhase.REGISTER_BEAN);
+        }
+
+        @ConditionalOnProperty(
+                name = "ai.enabled",
+                havingValue = "true"
+        )
+        static class AiEnabled {
+        }
+
+        @ConditionalOnProperty(
+                name = "ai.mock",
+                havingValue = "false"
+        )
+        static class AiMockDisabled {
         }
     }
 }

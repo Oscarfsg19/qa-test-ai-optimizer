@@ -7,12 +7,18 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
+@ConditionalOnProperty(
+        name = "ai.mock",
+        havingValue = "false",
+        matchIfMissing = false
+)
 public class OpenAiConfig {
 
     @Bean
     @ConditionalOnProperty(
             name = "ai.enabled",
-            havingValue = "true"
+            havingValue = "true",
+            matchIfMissing = false
     )
     public OpenAIClient openAIClient() {
         return OpenAIOkHttpClient.fromEnv();
